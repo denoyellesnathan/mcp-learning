@@ -79,7 +79,7 @@ app.post("/api/tools/:toolName", async (req, res) => {
 
   try {
     const result = await callTool(toolName, args);
-    res.json(result);
+    return res.json(JSON.parse(result.content?.[0]?.text) ?? "");
   } catch (err) {
     console.error(`POST /api/tools/${toolName} error:`, err);
     const status = err.message?.includes("not found") ? 404 : 502;

@@ -4,6 +4,7 @@ import { randomUUID } from "node:crypto";
 
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
+import { getAllActivities } from "../tools/todoist/activities.js";
 
 // In-memory sessions: fine for learning / single instance.
 // For real hosting behind a load balancer, use sticky sessions or a shared store.
@@ -28,6 +29,45 @@ function createMcpServer() {
       return {
         content: [{ type: "text", text: "Hello World!" }],
       };
+    }
+  );
+
+  server.registerTool(
+    "todoist_get_activities",
+    {
+      description: "Fetch Todoist activity events with optional filtering. Parameters: limit (number, default 50), eventTypeFilter (string, default 'completed', use empty string for all), maxPages (number, default null for all pages)",
+    },
+    async (args, _ctx) => {
+      try {
+        const token = "92c8e007bc150489a9b8f7b739f626fc9a50a303";
+        const limit = args.limit || 50;
+        const eventTypeFilter = args.eventTypeFilter === "" ? null : (args.eventTypeFilter || "completed");
+        const maxPages = args.maxPages || null;
+
+        const activities = await getAllActivities(token, limit, eventTypeFilter, maxPages);
+
+        return {
+          content: [
+            {
+              type: "text",
+              text: JSON.stringify({
+                count: activities.length,
+                activities: activities
+              })
+            }
+          ]
+        };
+      } catch (error) {
+        return {
+          content: [
+            {
+              type: "text",
+              text: `Error fetching Todoist activities: ${error.message}`
+            }
+          ],
+          isError: true
+        };
+      }
     }
   );
 

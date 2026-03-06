@@ -6,11 +6,11 @@
     "hello-world-mcp-server": "./src/index.js"
   },
   "scripts": {
-    "start": "node src/mcp-stdio.js",
-    "start:hosted": "node src/mcp-streamable-http.js",
+    "start": "node src/server/mcp-stdio.js",
+    "start:hosted": "node src/server/mcp-streamable-http.js",
     "test:sse": "node test-streamable-http.js",
-    "start:wrapper": "node src/mcp-rest-wrapper.js",
-    "test:openai": "node src/openai-mcp-client.js",
+    "start:wrapper": "node src/server/mcp-rest-wrapper.js",
+    "test:openai": "node src/server/openai-mcp-client.js",
     "docker:build": "docker build -t hello-world-mcp-server .",
     "docker:start": "docker run -d -p 3000:3000 --name hello-world-mcp-server hello-world-mcp-server",
     "docker:stop": "docker stop hello-world-mcp-server && docker rm hello-world-mcp-server"
