@@ -9,12 +9,14 @@
     "start": "node src/mcp-stdio.js",
     "start:hosted": "node src/mcp-streamable-http.js",
     "test:sse": "node test-streamable-http.js",
+    "test:openai": "node openai-mcp-client.js",
     "docker:build": "docker build -t hello-world-mcp-server .",
     "docker:start": "docker run -d -p 3000:3000 --name hello-world-mcp-server hello-world-mcp-server",
     "docker:stop": "docker stop hello-world-mcp-server && docker rm hello-world-mcp-server"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0",
-    "express": "^4.18.2"
+    "express": "^4.18.2",
+    "openai": "^4.0.0"
   }
 }
