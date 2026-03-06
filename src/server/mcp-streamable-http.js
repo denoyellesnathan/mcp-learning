@@ -1,10 +1,12 @@
 #!/usr/bin/env node
 import express from "express";
 import { randomUUID } from "node:crypto";
+import { z } from "zod";
 
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { getAllActivities } from "../tools/todoist/activities.js";
+import { fetchOutlook, parseOutlook, formatOutput } from "../tools/weather/parse_spc_outlook.js";
 
 // In-memory sessions: fine for learning / single instance.
 // For real hosting behind a load balancer, use sticky sessions or a shared store.
@@ -35,7 +37,12 @@ function createMcpServer() {
   server.registerTool(
     "todoist_get_activities",
     {
-      description: "Fetch Todoist activity events with optional filtering. Parameters: limit (number, default 50), eventTypeFilter (string, default 'completed', use empty string for all), maxPages (number, default null for all pages)",
+      description: "Fetch Todoist activity events with optional filtering",
+      inputSchema: z.object({
+        limit: z.number().default(50).describe("Maximum number of activities per page"),
+        eventTypeFilter: z.string().default("completed").describe("Filter by event type (use empty string for all events)"),
+        maxPages: z.number().nullable().default(null).describe("Maximum number of pages to fetch (null for all pages)")
+      })
     },
     async (args, _ctx) => {
       try {
@@ -63,6 +70,46 @@ function createMcpServer() {
             {
               type: "text",
               text: `Error fetching Todoist activities: ${error.message}`
+            }
+          ],
+          isError: true
+        };
+      }
+    }
+  );
+
+  server.registerTool(
+    "weather_spc_outlook",
+    {
+      description: "Parse NOAA Storm Prediction Center Day 2 Convective Outlook. Returns structured severe weather forecast data including risk areas, threats, and geographic discussion",
+      inputSchema: z.object({
+        url: z.string().default("https://www.spc.noaa.gov/products/outlook/day2otlk.html").describe("URL of the SPC outlook page to parse"),
+        format: z.enum(["human", "json"]).default("json").describe("Output format: 'human' for readable text or 'json' for structured data")
+      })
+    },
+    async (args, _ctx) => {
+      try {
+        const url = args.url || "https://www.spc.noaa.gov/products/outlook/day2otlk.html";
+        const format = args.format || "json";
+
+        const html = await fetchOutlook(url);
+        const data = parseOutlook(html);
+        const output = formatOutput(data, format);
+
+        return {
+          content: [
+            {
+              type: "text",
+              text: format === "json" ? output : output
+            }
+          ]
+        };
+      } catch (error) {
+        return {
+          content: [
+            {
+              type: "text",
+              text: `Error fetching SPC outlook: ${error.message}`
             }
           ],
           isError: true

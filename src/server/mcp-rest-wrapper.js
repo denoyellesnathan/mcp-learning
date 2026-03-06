@@ -75,7 +75,10 @@ app.get("/api/tools", async (_req, res) => {
 // Call a specific MCP tool by name
 app.post("/api/tools/:toolName", async (req, res) => {
   const { toolName } = req.params;
-  const args = req.body.arguments ?? req.body ?? {};
+  const args = {
+    ...req.query,
+    ...req.body.arguments ?? req.body ?? {}
+  };
 
   try {
     const result = await callTool(toolName, args);
