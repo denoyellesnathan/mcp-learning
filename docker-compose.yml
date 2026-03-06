@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  mcp-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mcp-server
+    ports:
+      - "3000:3000"
+    networks:
+      - mcp-network
+
+  mcp-wrapper:
+    build:
+      context: .
+      dockerfile: Dockerfile.wrapper
+    container_name: mcp-wrapper
+    ports:
+      - "4000:4000"
+    environment:
+      - MCP_SERVER_URL=http://mcp-server:3000/mcp
+      - WRAPPER_PORT=4000
+    depends_on:
+      - mcp-server
+    networks:
+      - mcp-network
+
+networks:
+  mcp-network:
+    driver: bridge
