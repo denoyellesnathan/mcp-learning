@@ -13,7 +13,10 @@
     "test:openai": "node src/server/openai-mcp-client.js",
     "docker:build": "docker build -t hello-world-mcp-server .",
     "docker:start": "docker run -d -p 3000:3000 --name hello-world-mcp-server hello-world-mcp-server",
-    "docker:stop": "docker stop hello-world-mcp-server && docker rm hello-world-mcp-server"
+    "docker:stop": "docker stop hello-world-mcp-server && docker rm hello-world-mcp-server",
+    "docker:up": "docker-compose up -d --build",
+    "docker:down": "docker-compose down",
+    "docker:logs": "docker-compose logs -f"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0",
